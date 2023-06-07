@@ -1,0 +1,9 @@
+flask
+ChatterBot
+chatterbot_corpus
+numpy
+panda
+typing_extensions
+packaging
+tqdm
+en_core_web_sm
