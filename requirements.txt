@@ -6,4 +6,4 @@ panda
 typing_extensions
 packaging
 tqdm
-en_core_web_sm
+spacy
