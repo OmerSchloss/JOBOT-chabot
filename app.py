@@ -63,6 +63,13 @@ def home():
 @app.route("/reset")
 def reset_conversation():
 
+    global last_step
+    global current_step
+    global current_question
+    global job_search_started
+    global answers
+    global questions
+
     questions = [
         "What are your skills and areas of expertise?",
         "What is your educational background?",
@@ -78,12 +85,6 @@ def reset_conversation():
         "Are there any companies that you are particularly interested in working for?",
         "Would you like to start the job search?"
     ]
-
-    global last_step
-    global current_step
-    global current_question
-    global job_search_started
-    global answers
 
     answers = []
     last_step = None
