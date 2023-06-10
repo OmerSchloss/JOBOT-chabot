@@ -81,7 +81,7 @@
       let currentDotIndex = 0;
 
       // Display temporary message
-      appendMessage("", BOT_IMG, "left", temporaryMsg);
+      appendMessage(BOT_NAME, BOT_IMG, "left", temporaryMsg);
 
       // Start changing dots
       const intervalId = setInterval(() => {
@@ -92,18 +92,41 @@
       }, 500);
 
       // Bot Response
-      $.get("/get", { msg: rawText }).done(function (data) {
-        clearInterval(intervalId); // Stop changing dots
+      setTimeout(() => {
+        $.get("/get", { msg: rawText }).done(function (data) {
+          clearInterval(intervalId); // Stop changing dots
 
-        // Remove the temporary message bubble
-        const temporaryMsgBubble = msgerChat.lastElementChild;
-        msgerChat.removeChild(temporaryMsgBubble);
+          // Remove the temporary message bubble
+          const temporaryMsgBubble = msgerChat.lastElementChild;
+          msgerChat.removeChild(temporaryMsgBubble);
 
-        const msgText = data;
-        appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
-        enableInput();
-        msgerInput.focus(); // Return focus to the input field
-      });
+          const msgText = data;
+          appendMessage(BOT_NAME, BOT_IMG, "left", ""); // Create a new empty bubble for the bot's response
+          typeBotResponse(msgText);
+        });
+      }, 500); // Delay the bot response by half a second (500 milliseconds)
+    }
+
+    function typeBotResponse(response) {
+      const typingSpeed = 50; // Delay between each letter in milliseconds
+      let currentCharIndex = 0;
+
+      const lastMsgBubble = msgerChat.lastElementChild.querySelector(".msg-bubble");
+      const msgTextContainer = lastMsgBubble.querySelector(".msg-text");
+
+      // Start typing response
+      const intervalId = setInterval(() => {
+        const partialResponse = response.slice(0, currentCharIndex + 1);
+        msgTextContainer.innerHTML = splitLongText(partialResponse);
+
+        currentCharIndex++;
+
+        if (currentCharIndex === response.length) {
+          clearInterval(intervalId); // Stop typing
+          enableInput();
+          msgerInput.focus(); // Return focus to the input field
+        }
+      }, typingSpeed);
     }
 
 
