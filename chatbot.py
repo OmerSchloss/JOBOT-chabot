@@ -119,6 +119,8 @@ conversation = [
     "You're welcome! If you have any more questions or need assistance, feel free to ask."
 ]
 
+trainer.train(conversation)
+ 
 conversation = [
     "Hello!",
     "Hi there! Are you currently looking for a job?",

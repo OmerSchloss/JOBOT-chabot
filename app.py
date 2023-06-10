@@ -1,11 +1,12 @@
 import random
-from chatbot import CB
+# from chatbot import CB
 from flask import Flask, render_template, request
 
-from database import save_answer
 import nlp
+# import webview
 
-app = Flask(__name__)
+# app = Flask(__name__)
+app = Flask(__name__, template_folder='./templates', static_folder='./static')
 
 # Conversation flow questions
 questions = [
@@ -37,6 +38,7 @@ last_step = None
 current_step = None
 current_question = None
 job_search_started = False
+answers = []
 
 
 def get_next_question():
@@ -57,30 +59,33 @@ def get_random_conversation_topic():
 def home():
     return render_template("index.html")
 
+
 @app.route("/reset")
 def reset_conversation():
 
     questions = [
-    "What are your skills and areas of expertise?",
-    "What is your educational background?",
-    "Are you willing to travel or relocate for a job?",
-    "What type of job are you looking for? Full-time? Part-time?",
-    "Do you have a preference between working from home, working from the office, or a hybrid mode?",
-    "Where do you prefer to work? Which city?",
-    "What percentage of the workday will you be expected to work, and what specific hours or days will you be required to work?",
-    "What type of industry are you interested in?",
-    "What are your interests and passions?",
-    "What type of work-related activities do you enjoy outside of work?",
-    "What is your level of experience?",
-    "Are there any companies that you are particularly interested in working for?",
-    "Would you like to start the job search?"
+        "What are your skills and areas of expertise?",
+        "What is your educational background?",
+        "Are you willing to travel or relocate for a job?",
+        "What type of job are you looking for? Full-time? Part-time?",
+        "Do you have a preference between working from home, working from the office, or a hybrid mode?",
+        "Where do you prefer to work? Which city?",
+        "What percentage of the workday will you be expected to work, and what specific hours or days will you be required to work?",
+        "What type of industry are you interested in?",
+        "What are your interests and passions?",
+        "What type of work-related activities do you enjoy outside of work?",
+        "What is your level of experience?",
+        "Are there any companies that you are particularly interested in working for?",
+        "Would you like to start the job search?"
     ]
 
     global last_step
     global current_step
     global current_question
     global job_search_started
+    global answers
 
+    answers = []
     last_step = None
     current_step = None
     current_question = None
@@ -92,13 +97,14 @@ def reset_conversation():
 @app.route("/get")
 def get_bot_response():
     userText = request.args.get('msg')
-    response = str(CB.get_response(userText))
+    response = 'well'  # str(CB.get_response(userText))
 
     global last_step  # None
     global current_step  # None
     global current_question  # None
     global job_search_started
     global questions
+    global answers
 
     if current_step is None:
         # Welcome message and first question to start the conversation
@@ -113,7 +119,7 @@ def get_bot_response():
             current_question = get_next_question()
             return current_question
         elif userText is not None and (nlp.is_negative_response(userText.lower())):
-            if(last_step != "conversation"):
+            if (last_step != "conversation"):
                 # User wants to engage in a conversation about advice and job-related topics
                 current_step = "conversation"
                 topic = get_random_conversation_topic()
@@ -126,25 +132,28 @@ def get_bot_response():
         # Store user's answer in the database
         question = current_question
         answer = userText
-        save_answer(question, answer)
-        if(question == "Would you like to start the job search?"):
+        # save_answer(question, answer)
+        # processed_answer = nlp.process_answer(answer)
+        answers.append((question, answer))
+
+        if (question == "Would you like to start the job search?"):
             if userText is not None and (nlp.is_positive_response(userText.lower())):
                 current_step = "start_job_search"
             elif userText is not None and (nlp.is_negative_response(userText.lower())):
-                if(last_step != "conversation"):
+                if (last_step != "conversation"):
                     # User wants to engage in a conversation about advice and job-related topics
                     current_step = "conversation"
                     topic = get_random_conversation_topic()
                     return f"Sure! Let's talk about {topic}. What would you like to know or discuss?"
                 current_step = "conversation"
-            else: 
+            else:
                 return "I'm sorry, I didn't understand your response. Could you please answer with 'yes' or 'no' in a different way? For example, you can say 'absolutely' or 'not at the moment'."
 
         else:
             current_question = get_next_question()
             return current_question
-        
-    if  current_step == "start_job_search" or (userText is not None and nlp.want_to_start_job_search(userText.lower())):
+
+    if current_step == "start_job_search" or (userText is not None and nlp.want_to_start_job_search(userText.lower())):
         # Check if the job search has started or if the user wants to continue with questions
         if userText is not None and userText.lower() == "yes":
             # User wants the bot to start searching on the web
@@ -153,11 +162,8 @@ def get_bot_response():
             job_offers = generate_fake_job_offers()
             return "Job search initiated. Here are some job offers for you:\n\n" + "\n".join(job_offers)
 
-
-
-
     if current_step == "conversation":
-        if random.random() < 0.1:
+        if random.random() < 0.3:
             # Ask if the user wants to start the job search
             last_step = current_step
             current_step = "start"
@@ -176,6 +182,9 @@ def generate_fake_job_offers():
                   "Graphic Designer at JKL Agency"]
     return job_offers
 
+# webview.create_window("JOBOT",app)
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
+    # webview.start()

@@ -1,8 +1,24 @@
 import spacy
 
-# Load spaCy NLP model
-nlp = spacy.load('en_core_web_sm')
+import spacy
+model_path = "models/en_core_web_sm-3.5.0"
+nlp = spacy.load(model_path)
 
+# def process_answer(answer):
+#     doc = nlp(answer)
+
+#     # Perform named entity recognition (NER)
+#     entities = [(ent.text, ent.label_) for ent in doc.ents]
+
+#     # Perform part-of-speech (POS) tagging
+#     pos_tags = [(token.text, token.pos_) for token in doc]
+
+#     # Perform dependency parsing
+#     dependencies = [(token.text, token.dep_, token.head.text) for token in doc]
+
+#     # You can add more processing or extraction logic as needed
+
+#     return entities, pos_tags, dependencies
 
 
 def is_positive_response(text):

@@ -5,7 +5,7 @@
 - After installation run `app.py`.
 - Go to the `127.0.0.1:5000/chatbot`, You can start chatting.
 
-
+##en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl
 
 questions = [
 "What are your skills and areas of expertise?",
@@ -44,3 +44,6 @@ questions = [
 "Do you have any professional affiliations or memberships?",
 "Would you like to provide any additional information or preferences for your job search?"
 ]
+
+
+python -m spacy download en_core_web_sm

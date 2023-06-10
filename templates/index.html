@@ -16,7 +16,7 @@
   <section class="msger">
     <header class="msger-header">
       <div class="msger-header-title">
-        <i class="fas fa-bug"></i> JoBot <i class="fas fa-bug"></i>
+        <i class="fas fa-robot"></i> JoBot <i class="fas fa-robot"></i>
       </div>
     </header>
 
@@ -58,18 +58,15 @@
     });
 
     function appendMessage(name, img, side, text) {
-      //   Simple solution for small apps
       const msgHTML = `
       <div class="msg ${side}-msg">
         <div class="msg-img" style="background-image: url(${img})";></div>
-
         <div class="msg-bubble">
           <div class="msg-info">
             <div class="msg-info-name">${name}</div>
             <div class="msg-info-time">${formatDate(new Date())}</div>
           </div>
-
-          <div class="msg-text">${text}</div>
+          <div class="msg-text">${splitLongText(text)}</div>
         </div>
       </div>
       `;
@@ -79,19 +76,36 @@
     }
 
     function botResponse(rawText) {
+      const temporaryMsg = "";
+      const dots = ["🔴🟠", "🔴🟠🟤", "🔴🟠🟤🟣", "🔴🟠🟤🟣🔵", "🔴🟠🟤🟣🔵🟢"];
+      let currentDotIndex = 0;
+
+      // Display temporary message
+      appendMessage("", BOT_IMG, "left", temporaryMsg);
+
+      // Start changing dots
+      const intervalId = setInterval(() => {
+        currentDotIndex = (currentDotIndex + 1) % dots.length;
+        const temporaryMsgWithDots = temporaryMsg + dots[currentDotIndex];
+        const lastMsgBubble = msgerChat.lastElementChild.querySelector(".msg-bubble");
+        lastMsgBubble.innerHTML = `<div class="msg-text">${splitLongText(temporaryMsgWithDots)}</div>`;
+      }, 500);
 
       // Bot Response
       $.get("/get", { msg: rawText }).done(function (data) {
-        console.log(rawText);
-        console.log(data);
+        clearInterval(intervalId); // Stop changing dots
+
+        // Remove the temporary message bubble
+        const temporaryMsgBubble = msgerChat.lastElementChild;
+        msgerChat.removeChild(temporaryMsgBubble);
+
         const msgText = data;
         appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
         enableInput();
         msgerInput.focus(); // Return focus to the input field
-
       });
-
     }
+
 
     function disableInput() {
       msgerInput.disabled = true;
@@ -125,6 +139,53 @@
         msgerChat.innerHTML = messages;
       }
     }
+
+    function splitLongText(text) {
+      let maxCharactersPerLine = 30; // Maximum number of characters per line
+      let words = text.split(" ");
+      let result = "";
+      let line = "";
+
+      for (let i = 0; i < words.length; i++) {
+        let currentWord = words[i];
+        let remainingSpace = maxCharactersPerLine - line.length;
+
+        if (currentWord.length <= maxCharactersPerLine) {
+          if (currentWord.length <= remainingSpace) {
+            line += currentWord + " ";
+          } else {
+            result += line.trim() + "<br>";
+            line = currentWord + " ";
+          }
+        } else {
+          let wordParts = splitWordIntoParts(currentWord, maxCharactersPerLine);
+          for (let j = 0; j < wordParts.length; j++) {
+            if (line.length + wordParts[j].length <= maxCharactersPerLine) {
+              line += wordParts[j] + " ";
+            } else {
+              result += line.trim() + "<br>";
+              line = wordParts[j] + " ";
+            }
+          }
+        }
+      }
+
+      if (line.length > 0) {
+        result += line.trim() + "<br>";
+      }
+
+      return result;
+    }
+
+    function splitWordIntoParts(word, maxCharactersPerLine) {
+      let parts = [];
+      for (let i = 0; i < word.length; i += maxCharactersPerLine) {
+        parts.push(word.substr(i, maxCharactersPerLine));
+      }
+      return parts;
+    }
+
+
 
     // Check if there are saved messages and ask the user if they want to restore them
     const savedMessages = localStorage.getItem("chatMessages");
