@@ -99,8 +99,6 @@ def process_answer_job_title(text):
 
 
 def process_answer_location(text):
-    # Process the location answer
-    doc_location = nlp(text)
     relevant_locations = []
 
     cities_in_israel = [
@@ -237,8 +235,14 @@ def process_answer_location(text):
         # Add more cities or districts as needed
     ]
 
+    doc_location = nlp(text)
 
     for ent in doc_location.ents:
         if ent.label_ == 'GPE' or ent.text.lower() in [city.lower() for city in cities_in_israel]:
             relevant_locations.append(ent.text)
+
+    for city in cities_in_israel:
+        if city.lower() in text.lower() and city not in relevant_locations:
+            relevant_locations.append(city)
+
     return relevant_locations

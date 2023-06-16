@@ -185,7 +185,7 @@ def get_bot_response():
             # Add code to initiate the job search using a web scraper and return fake job offers
             job_offers = generate_job_offers(job_titles, job_locations)
 
-            df = pd.DataFrame({'Questions': questions, 'Answers': answers})
+            df = pd.DataFrame({'Questions': askedQuestions, 'Answers': answers})
             df['Combined_Answers'] = ' '.join(answers)
             find_the_best_job(df, job_offers)
 
