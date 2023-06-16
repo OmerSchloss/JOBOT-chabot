@@ -1,8 +1,11 @@
 import random
 # from chatbot import CB
 from flask import Flask, render_template, request
-
+import pandas as pd
+from FindBestJob import find_the_best_job
+from JobScraper import generate_job_offers
 import nlp
+
 # import webview
 
 # app = Flask(__name__)
@@ -10,19 +13,17 @@ app = Flask(__name__, template_folder='./templates', static_folder='./static')
 
 # Conversation flow questions
 questions = [
-    "What are your skills and areas of expertise?",
-    "What is your educational background?",
-    "Are you willing to travel or relocate for a job?",
-    "What type of job are you looking for? Full-time? Part-time?",
-    "Do you have a preference between working from home, working from the office, or a hybrid mode?",
-    "Where do you prefer to work? Which city?",
-    "What percentage of the workday will you be expected to work, and what specific hours or days will you be required to work?",
-    "What type of industry are you interested in?",
-    "What are your interests and passions?",
-    "What type of work-related activities do you enjoy outside of work?",
-    "What is your level of experience?",
-    "Are there any companies that you are particularly interested in working for?",
-    "Would you like to start the job search?"
+    "What is your preferred job title or role?",
+    "What industry or field are you interested in?",
+    "How many years of experience do you have in this field?",
+    "What are your specific skills or areas of expertise?",
+    "Are you looking for full-time, part-time, or freelance opportunities?",
+    "What is your preferred location for the job?",
+    "Are you open to remote work or do you prefer on-site positions?",
+    "What is your desired salary range?",
+    "Are there any specific companies or organizations you would like to work for?",
+    "What level of education or certifications do you possess?",
+    "Are there any specific job benefits or perks you value?"
 ]
 
 conversation_topics = [
@@ -39,6 +40,9 @@ current_step = None
 current_question = None
 job_search_started = False
 answers = []
+askedQuestions = []
+job_titles = None
+job_locations = None
 
 
 def get_next_question():
@@ -47,7 +51,7 @@ def get_next_question():
     if len(questions) > 0:
         return questions.pop(0)
     else:
-        return "start job search"
+        return "Would you like to start the job search?"
 
 
 def get_random_conversation_topic():
@@ -69,28 +73,33 @@ def reset_conversation():
     global job_search_started
     global answers
     global questions
+    global askedQuestions
+    global job_titles
+    global job_locations
 
+    # Conversation flow questions
     questions = [
-        "What are your skills and areas of expertise?",
-        "What is your educational background?",
-        "Are you willing to travel or relocate for a job?",
-        "What type of job are you looking for? Full-time? Part-time?",
-        "Do you have a preference between working from home, working from the office, or a hybrid mode?",
-        "Where do you prefer to work? Which city?",
-        "What percentage of the workday will you be expected to work, and what specific hours or days will you be required to work?",
-        "What type of industry are you interested in?",
-        "What are your interests and passions?",
-        "What type of work-related activities do you enjoy outside of work?",
-        "What is your level of experience?",
-        "Are there any companies that you are particularly interested in working for?",
-        "Would you like to start the job search?"
+        "What is your preferred job title or role?",
+        "What industry or field are you interested in?",
+        "How many years of experience do you have in this field?",
+        "What are your specific skills or areas of expertise?",
+        "Are you looking for full-time, part-time, or freelance opportunities?",
+        "What is your preferred location for the job?",
+        "Are you open to remote work or do you prefer on-site positions?",
+        "What is your desired salary range?",
+        "Are there any specific companies or organizations you would like to work for?",
+        "What level of education or certifications do you possess?",
+        "Are there any specific job benefits or perks you value?"
     ]
 
     answers = []
+    askedQuestions = []
     last_step = None
     current_step = None
     current_question = None
     job_search_started = False
+    job_titles = None
+    job_locations = None
 
     return "Conversation has been reset. You can now start a new conversation."
 
@@ -106,6 +115,9 @@ def get_bot_response():
     global job_search_started
     global questions
     global answers
+    global askedQuestions
+    global job_titles
+    global job_locations
 
     if current_step is None:
         # Welcome message and first question to start the conversation
@@ -130,14 +142,19 @@ def get_bot_response():
             return "I'm sorry, I didn't understand your response. Could you please answer with 'yes' or 'no' in a different way? For example, you can say 'absolutely' or 'not at the moment'."
 
     if current_step == "questions":
-        # Store user's answer in the database
-        question = current_question
-        answer = userText
-        # save_answer(question, answer)
-        # processed_answer = nlp.process_answer(answer)
-        answers.append((question, answer))
+        if current_question == "What is your preferred job title or role?":
+            job_titles = nlp.process_answer_job_title(userText)
+            print(job_titles)
+            if job_titles == []:
+                return "I didn't catch any job title, please try again."
 
-        if (question == "Would you like to start the job search?"):
+        if current_question == "What is your preferred location for the job?":
+            job_locations = nlp.process_answer_location(userText)
+            print(job_locations)
+            if job_locations == []:
+                return "I didn't catch any location, please try again."
+
+        if (current_question == "Would you like to start the job search?"):
             if userText is not None and (nlp.is_positive_response(userText.lower())):
                 current_step = "start_job_search"
             elif userText is not None and (nlp.is_negative_response(userText.lower())):
@@ -151,6 +168,12 @@ def get_bot_response():
                 return "I'm sorry, I didn't understand your response. Could you please answer with 'yes' or 'no' in a different way? For example, you can say 'absolutely' or 'not at the moment'."
 
         else:
+            # save_answer(question, answer)
+            if userText is not None:
+                answers.append(userText)
+            else:
+                return "I didn't catch any answer, please try again."
+            askedQuestions.append(current_question)
             current_question = get_next_question()
             return current_question
 
@@ -160,8 +183,13 @@ def get_bot_response():
             # User wants the bot to start searching on the web
             job_search_started = True
             # Add code to initiate the job search using a web scraper and return fake job offers
-            job_offers = generate_fake_job_offers()
-            return "Job search initiated. Here are some job offers for you:\n\n" + "\n".join(job_offers)
+            job_offers = generate_job_offers(job_titles, job_locations)
+
+            df = pd.DataFrame({'Questions': questions, 'Answers': answers})
+            df['Combined_Answers'] = ' '.join(answers)
+            find_the_best_job(df, job_offers)
+
+            return "Job search initiated. Here are some job offers for you:\n\n"
 
     if current_step == "conversation":
         if random.random() < 0.3:
@@ -173,15 +201,6 @@ def get_bot_response():
     # If the code reaches this point, handle any unexpected or unrecognized user input
     return response
 
-
-def generate_fake_job_offers():
-    # Add code to generate fake job offers using a web scraper or predefined data
-    job_offers = ["Software Engineer at ABC Company",
-                  "Marketing Specialist at XYZ Corporation",
-                  "Data Analyst at DEF Industries",
-                  "Project Manager at GHI Solutions",
-                  "Graphic Designer at JKL Agency"]
-    return job_offers
 
 # webview.create_window("JOBOT",app)
 

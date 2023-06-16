@@ -26,16 +26,16 @@ BERT (Bidirectional Encoder Representations from Transformers) is chosen for thi
 
 Overall, BERT is chosen in this case because it provides contextual understanding, semantic similarity, transfer learning benefits, fine-tuning flexibility, and state-of-the-art performance. These qualities make BERT well-suited for job recommendation tasks where understanding the user's preferences and matching them with relevant job descriptions is crucial.
 """
-from Utils import create_demo_user, create_demo_job_list
+
+
+
 
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import BertTokenizer, BertModel
-
-
-if __name__ == '__main__':
-    df_QA = create_demo_user()
-    jobs_df = create_demo_job_list()
+def find_the_best_job(df_QA, jobs_df):
+    # df_QA = create_demo_user()
+    # jobs_df = create_demo_job_list()
 
     # Load the BERT tokenizer and model
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -118,7 +118,8 @@ if __name__ == '__main__':
                 outputs = model(input_ids, attention_mask)
                 job_embedding = outputs[0][:, 0, :].cpu().numpy()
                 # job_embeddings.append(job_embedding)
-                job_embeddings.append(torch.tensor(job_embedding))  # Convert to tensor
+                job_embeddings.append(torch.tensor(
+                    job_embedding))  # Convert to tensor
 
         job_embeddings = torch.cat(job_embeddings, dim=0)
 
