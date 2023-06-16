@@ -1,55 +1,48 @@
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup
+import time
+import requests
+from urllib.parse import urlencode
+from selenium import webdriver
+from urllib.parse import urlencode
 
 
-def scrape_indeed_jobs(query, location, num_pages):
-    base_url = "https://www.indeed.com/jobs"
-    job_data = []
-    
-    for page in range(num_pages):
-        params = {
-            "q": query,
-            "l": location,
-            "start": page * 10  # Each page displays 10 job offers
-        }
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        }
+def get_indeed_search_url(keyword, location, offset=0):
+    parameters = {"q": keyword, "l": location, "filter": 0, "start": offset}
+    return "https://il.indeed.com/jobs?" + urlencode(parameters)
 
-        response = requests.get(base_url, params=params, headers=headers)
 
-        
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, "html.parser")
-            
-            job_elements = soup.select(".jobsearch-SerpJobCard")
-            for job_element in job_elements:
-                title_element = job_element.select_one(".jobtitle")
-                title = title_element.text.strip() if title_element else ""
-                
-                company_element = job_element.select_one(".company")
-                company = company_element.text.strip() if company_element else ""
-                
-                location_element = job_element.select_one(".location")
-                location = location_element.text.strip() if location_element else ""
-                
-                description_element = job_element.select_one(".summary")
-                description = description_element.text.strip() if description_element else ""
+def scrape_job_details(url):
+    driver = webdriver.Chrome()
+    driver.get(url)
+    time.sleep(3)
+    html = driver.page_source
+    driver.quit()
 
-                job_offer = {
-                    "Job name": title,
-                    "Job Company": company,
-                    "Job location": location,
-                    "Job description": description
-                }
+    content = BeautifulSoup(html, 'lxml')
+    jobs_list = []
 
-                job_data.append(job_offer)
-        
-        else:
-            print(f"Failed to retrieve job data for page {page+1}. Status code:", response.status_code)
+    for post in content.select('.job_seen_beacon'):
+        try:
+            data = {
+                "job_title": post.select('.jobTitle')[0].get_text().strip(),
+                "company": post.select('.companyName')[0].get_text().strip(),
+                "location": post.select('.companyLocation')[0].get_text().strip(),
+                "date": post.select('.date')[0].get_text().strip()
+            }
+            print(data)
+            jobs_list.append(data)
+        except IndexError:
+            continue
 
-    return job_data
+    return jobs_list
+
+
+if __name__ == "__main__":
+    current_url = get_indeed_search_url('Data Scientist', 'rehovot')
+    print(current_url)
+    job_data = scrape_job_details(current_url)
+    print(job_data)
 
 # Example job data
 job_data = [
@@ -73,8 +66,10 @@ job_data = [
     },
     # Add more job entries as needed
 ]
+
+
 def generate_job_offers(job_titles, job_locations):
-    #job_data = scrape_indeed_jobs(job_titles[0], job_locations[0], 1)
+    # job_data = scrape_indeed_jobs(job_titles[0], job_locations[0], 1)
     jobs_df = pd.DataFrame(job_data)
 
     # Display the DataFrame

@@ -32,7 +32,7 @@ Overall, BERT is chosen in this case because it provides contextual understandin
 
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import BertTokenizer, BertModel
+from transformers import BertTokenizer, BertModel # type: ignore
 def find_the_best_job(df_QA, jobs_df):
     # df_QA = create_demo_user()
     # jobs_df = create_demo_job_list()

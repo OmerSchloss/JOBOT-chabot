@@ -80,11 +80,12 @@ def reset_conversation():
     # Conversation flow questions
     questions = [
         "What is your preferred job title or role?",
+        "What is your preferred location for the job?",
+
         "What industry or field are you interested in?",
         "How many years of experience do you have in this field?",
         "What are your specific skills or areas of expertise?",
         "Are you looking for full-time, part-time, or freelance opportunities?",
-        "What is your preferred location for the job?",
         "Are you open to remote work or do you prefer on-site positions?",
         "What is your desired salary range?",
         "Are there any specific companies or organizations you would like to work for?",
@@ -185,7 +186,8 @@ def get_bot_response():
             # Add code to initiate the job search using a web scraper and return fake job offers
             job_offers = generate_job_offers(job_titles, job_locations)
 
-            df = pd.DataFrame({'Questions': askedQuestions, 'Answers': answers})
+            df = pd.DataFrame(
+                {'Questions': askedQuestions, 'Answers': answers})
             df['Combined_Answers'] = ' '.join(answers)
             find_the_best_job(df, job_offers)
 
