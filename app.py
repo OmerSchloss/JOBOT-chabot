@@ -3,7 +3,7 @@ import random
 from flask import Flask, render_template, request
 import pandas as pd
 from FindBestJob import find_the_best_job
-from JobScraper import generate_job_offers
+from JobScraper import find_job_offers, get_job_offers
 import nlp
 
 # import webview
@@ -99,8 +99,8 @@ def reset_conversation():
     current_step = None
     current_question = None
     job_search_started = False
-    job_titles = None
-    job_locations = None
+    job_titles = []
+    job_locations = []
 
     return "Conversation has been reset. You can now start a new conversation."
 
@@ -119,7 +119,10 @@ def get_bot_response():
     global askedQuestions
     global job_titles
     global job_locations
-
+    
+    if(job_titles != [] and job_locations !=[]):
+        find_job_offers(job_titles=job_titles,job_locations=job_locations);
+    
     if current_step is None:
         # Welcome message and first question to start the conversation
         welcome_message = "Hello! I'm here to assist you with your job search. Would you like to start?"
@@ -143,6 +146,7 @@ def get_bot_response():
             return "I'm sorry, I didn't understand your response. Could you please answer with 'yes' or 'no' in a different way? For example, you can say 'absolutely' or 'not at the moment'."
 
     if current_step == "questions":
+
         if current_question == "What is your preferred job title or role?":
             job_titles = nlp.process_answer_job_title(userText)
             print(job_titles)
@@ -154,6 +158,7 @@ def get_bot_response():
             print(job_locations)
             if job_locations == []:
                 return "I didn't catch any location, please try again."
+            
 
         if (current_question == "Would you like to start the job search?"):
             if userText is not None and (nlp.is_positive_response(userText.lower())):
@@ -184,7 +189,7 @@ def get_bot_response():
             # User wants the bot to start searching on the web
             job_search_started = True
             # Add code to initiate the job search using a web scraper and return fake job offers
-            job_offers = generate_job_offers(job_titles, job_locations)
+            job_offers = get_job_offers()
 
             df = pd.DataFrame(
                 {'Questions': askedQuestions, 'Answers': answers})
