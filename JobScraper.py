@@ -29,7 +29,7 @@ def find_jobs_from(website, job_title, location, desired_characs, filename="resu
         print(jobs_list)
         print('{} new job postings retrieved from {}. Stored in {}.'.format(num_listings,
                                                                             website, filename))
-        return (jobs_list , num_listings)
+        return (jobs_list, num_listings)
 
     if website == 'CWjobs':
         driver = initiate_driver(browser='chrome')
@@ -40,10 +40,9 @@ def find_jobs_from(website, job_title, location, desired_characs, filename="resu
 
         print('{} new job postings retrieved from {}. Stored in {}.'.format(num_listings,
                                                                             website, filename))
-        return (jobs_list , num_listings)
+        return (jobs_list, num_listings)
 
     return None
-
 
     # save_jobs_to_excel(jobs_list, filename)
 
@@ -183,16 +182,11 @@ def extract_company_indeed(job_elem):
 
 def extract_link_indeed(job_elem):
     link = job_elem.find('a')['href']
-    link = 'www.Indeed.com/' + link
+    link = 'www.Indeed.co.uk/' + link
     return link
 
 
 def extract_date_indeed(job_elem):
-    date_elem = job_elem.find('span', class_='date')
-    date = date_elem.text.strip()
-    return date
-
-def extract_jobkey_indeed(job_elem):
     date_elem = job_elem.find('span', class_='date')
     date = date_elem.text.strip()
     return date
@@ -215,7 +209,6 @@ def initiate_driver(browser):
         driver = webdriver.Edge()
         return driver
     return None
-
 
 
 def make_job_search(job_title, location, driver):
@@ -317,9 +310,8 @@ def extract_date_cwjobs(job_elem):
 if __name__ == "__main__":
     desired_characs = ['titles', 'companies', 'links', 'date_listed']
 
-    jobs_list = find_jobs_from('Indeed', 'data scientist', 'london', desired_characs)
-
-
+    jobs_list = find_jobs_from(
+        'Indeed', 'data scientist', 'london', desired_characs)
 
 
 def find_job_offers(job_titles, job_locations):
@@ -328,14 +320,15 @@ def find_job_offers(job_titles, job_locations):
 
     for job_title in job_titles:
         for job_location in job_locations:
-            find_jobs_from('Indeed', job_title, job_location , desired_characs)
+            find_jobs_from('Indeed', job_title, job_location, desired_characs)
+            find_jobs_from('CWjobs', job_title, job_location, desired_characs)
 
-    #jobs_df = pd.DataFrame(job_data)
-
-    # Display the DataFrame
-    #print(jobs_df)
-
-    #return jobs_df
 
 def get_job_offers():
+    # jobs_df = pd.DataFrame(job_data)
+
+    # Display the DataFrame
+    # print(jobs_df)
+
+    # return jobs_df
     return []
