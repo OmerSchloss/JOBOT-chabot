@@ -212,7 +212,7 @@ def initiate_driver(browser):
 
 
 def make_job_search(job_title, location, driver):
-    driver.get('https://www.cwjobs.coom/')
+    driver.get('https://www.cwjobs.co.uk/')
 
     # Select the job box
     job_title_box = driver.find_element_by_name('Keywords')
