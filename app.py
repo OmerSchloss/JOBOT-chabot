@@ -119,10 +119,8 @@ def get_bot_response():
     global askedQuestions
     global job_titles
     global job_locations
-    
-    if(job_titles != [] and job_locations !=[]):
-        find_job_offers(job_titles=job_titles,job_locations=job_locations);
-    
+
+
     if current_step is None:
         # Welcome message and first question to start the conversation
         welcome_message = "Hello! I'm here to assist you with your job search. Would you like to start?"
@@ -152,12 +150,17 @@ def get_bot_response():
             print(job_titles)
             if job_titles == []:
                 return "I didn't catch any job title, please try again."
+            if(job_titles != [] and job_locations !=[]):
+                find_job_offers(job_titles=job_titles,job_locations=job_locations);
 
         if current_question == "What is your preferred location for the job?":
             job_locations = nlp.process_answer_location(userText)
             print(job_locations)
             if job_locations == []:
                 return "I didn't catch any location, please try again."
+            if(job_titles != [] and job_locations !=[]):
+                find_job_offers(job_titles=job_titles,job_locations=job_locations);
+    
             
 
         if (current_question == "Would you like to start the job search?"):
