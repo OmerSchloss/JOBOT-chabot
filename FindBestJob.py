@@ -101,7 +101,7 @@ def find_the_best_job(df_QA, jobs_df):
 
         for _, job_row in jobs_df.iterrows():
             encoded_dict = tokenizer.encode_plus(
-                job_row['Job_description'],
+                job_row['job_description'],
                 add_special_tokens=True,
                 max_length=512,
                 padding='max_length',
@@ -134,7 +134,6 @@ def find_the_best_job(df_QA, jobs_df):
 
         # Print the details of the best job option
         print("\nBest Job Option:")
-        print("Job Name:", best_job['Job_name'])
-        print("Company:", best_job['Job_Company'])
-        print("Location:", best_job['Job_location'])
-        print("Description:", best_job['Job_description'])
+        print("Job Name:", best_job['job_name'])
+        print("Company:", best_job['company_name'])
+        print("Description:", best_job['job_description'])
