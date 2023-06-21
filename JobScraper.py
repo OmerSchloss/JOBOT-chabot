@@ -303,13 +303,6 @@ def extract_date_cwjobs(job_elem):
     return link
 
 
-if __name__ == "__main__":
-    desired_characs = ['titles', 'companies', 'links', 'date_listed']
-
-    jobs_list = find_jobs_from(
-        'Indeed', 'data scientist', 'london', desired_characs)
-
-
 def find_job_offers(job_titles, job_locations):
     # job_data = scrape_indeed_jobs(job_titles[0], job_locations[0], 1)
     desired_characs = ['titles', 'companies', 'links', 'date_listed']
@@ -348,3 +341,10 @@ def get_job_offers():
     # jobs_df = pd.DataFrame(job_data)
 
     return job_data
+
+
+if __name__ == "__main__":
+    desired_characs = ['titles', 'companies', 'links', 'date_listed']
+
+    jobs_list = find_jobs_from(
+        'Indeed', 'data scientist', 'london', desired_characs)
