@@ -6,9 +6,13 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+import threading
 
+job_data = []
+isDoneSearching = True
+thread = None
 
-def find_jobs_from(website, job_title, location, desired_characs, filename="results.xls"):
+def find_jobs_from(website, job_title, location, desired_characs):
     """
     This function extracts all the desired characteristics of all new job postings
     of the title and location specified and returns them in single file.
@@ -26,32 +30,23 @@ def find_jobs_from(website, job_title, location, desired_characs, filename="resu
         # job_soup = load_indeed_jobs_div(job_title, location)
         # jobs_list, num_listings = extract_job_information_indeed(job_soup, desired_characs)
         jobs_list, num_listings = load_indeed_jobs_div(job_title, location)
-        print(jobs_list)
-        print('{} new job postings retrieved from {}. Stored in {}.'.format(num_listings,
-                                                                            website, filename))
-        return (jobs_list, num_listings)
+        print('{} new job postings retrieved from {}.'.format(num_listings,
+                                                              website))
+        return jobs_list, num_listings
 
     if website == 'CWjobs':
         driver = initiate_driver(browser='chrome')
         job_soup = make_job_search(job_title, location, driver)
         jobs_list, num_listings = extract_job_information_cwjobs(
             job_soup, desired_characs)
-        print(jobs_list)
 
-        print('{} new job postings retrieved from {}. Stored in {}.'.format(num_listings,
-                                                                            website, filename))
-        return (jobs_list, num_listings)
+        print('{} new job postings retrieved from {}.'.format(num_listings,
+                                                              website))
+        return jobs_list, num_listings
 
-    return None
+    return [], 0
 
     # save_jobs_to_excel(jobs_list, filename)
-
-
-## ======================= GENERIC FUNCTIONS ======================= ##
-
-def save_jobs_to_excel(jobs_list, filename):
-    jobs = pd.DataFrame(jobs_list)
-    jobs.to_excel(filename)
 
 
 ## ================== FUNCTIONS FOR INDEED.CO.UK =================== ##
@@ -317,18 +312,35 @@ if __name__ == "__main__":
 def find_job_offers(job_titles, job_locations):
     # job_data = scrape_indeed_jobs(job_titles[0], job_locations[0], 1)
     desired_characs = ['titles', 'companies', 'links', 'date_listed']
+    global job_data
+    global isDoneSearching
+
+    new_jobs_list = []
 
     for job_title in job_titles:
         for job_location in job_locations:
-            find_jobs_from('Indeed', job_title, job_location, desired_characs)
-            find_jobs_from('CWjobs', job_title, job_location, desired_characs)
+            new_jobs_list, num_listings = find_jobs_from(
+                'Indeed', job_title, job_location, desired_characs)
+            # find_jobs_from('CWjobs', job_title, job_location, desired_characs)
 
+            if (num_listings > 0):
+                job_data.append(new_jobs_list)
+
+    return job_data
+
+def find_job_offers_async(job_titles, job_locations):
+    global thread
+    # Start a new thread for find_job_offers
+    thread = threading.Thread(target=find_job_offers, args=(job_titles, job_locations))
+    thread.start()
 
 def get_job_offers():
-    # jobs_df = pd.DataFrame(job_data)
+    # Wait for the find_job_offers thread to complete
+    global thread
 
-    # Display the DataFrame
-    # print(jobs_df)
+    thread.join() # type: ignore
 
-    # return jobs_df
-    return []
+    # Retrieve the job_data and process it
+    jobs_df = pd.DataFrame(job_data)
+
+    return jobs_df

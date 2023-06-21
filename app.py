@@ -3,7 +3,7 @@ import random
 from flask import Flask, render_template, request
 import pandas as pd
 from FindBestJob import find_the_best_job
-from JobScraper import find_job_offers, get_job_offers
+from JobScraper import find_job_offers_async, get_job_offers
 import nlp
 
 # import webview
@@ -150,8 +150,6 @@ def get_bot_response():
             print(job_titles)
             if job_titles == []:
                 return "I didn't catch any job title, please try again."
-            if(job_titles != [] and job_locations !=[]):
-                find_job_offers(job_titles=job_titles,job_locations=job_locations);
 
         if current_question == "What is your preferred location for the job?":
             job_locations = nlp.process_answer_location(userText)
@@ -159,8 +157,7 @@ def get_bot_response():
             if job_locations == []:
                 return "I didn't catch any location, please try again."
             if(job_titles != [] and job_locations !=[]):
-                find_job_offers(job_titles=job_titles,job_locations=job_locations);
-    
+                find_job_offers_async(job_titles=job_titles,job_locations=job_locations)   
             
 
         if (current_question == "Would you like to start the job search?"):
