@@ -194,9 +194,11 @@ def get_bot_response():
             df = pd.DataFrame(
                 {'Questions': askedQuestions, 'Answers': answers})
             df['Combined_Answers'] = ' '.join(answers)
-            find_the_best_job(df, job_offers)
+            new_offer = find_the_best_job(df, job_offers)
+            result_string = "I have found for you {} offers!\nHere is the best one:<br><br>{}".format(
+                len(job_offers), new_offer)
 
-            return "Job search initiated. Here are some job offers for you:\n\n"
+            return result_string
 
     if current_step == "conversation":
         if random.random() < 0.3:

@@ -2,7 +2,7 @@ import spacy
 import re
 
 model_path = "models/en_core_web_sm-3.5.0"
-nlp = spacy.load(model_path)
+nlp = spacy.load(model_path)  # type: ignore
 
 # def process_answer(answer):
 #     doc = nlp(answer)
@@ -246,3 +246,16 @@ def process_answer_location(text):
             relevant_locations.append(city)
 
     return relevant_locations
+
+
+def get_short_description(text):
+    doc = nlp(text)
+
+    # Extract sentences from the parsed document
+    sentences = [sent.text for sent in doc.sents]
+
+    # Select the first few sentences as the short description
+    num_sentences = 3  # Define the number of sentences for the short description
+    short_description = ' '.join(sentences[:num_sentences])
+
+    return short_description

@@ -30,13 +30,16 @@ Overall, BERT is chosen in this case because it provides contextual understandin
 
 
 
+import pandas as pd
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import BertTokenizer, BertModel # type: ignore
-def find_the_best_job(df_QA, jobs_df):
+import nlp
+def find_the_best_job(df_QA, job_data):
     # df_QA = create_demo_user()
     # jobs_df = create_demo_job_list()
-
+    jobs_df = pd.DataFrame(job_data)
+    print(jobs_df)
     # Load the BERT tokenizer and model
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased')
@@ -132,8 +135,10 @@ def find_the_best_job(df_QA, jobs_df):
         # Get the details of the best job option from the jobs
         best_job = jobs_df.iloc[best_job_index]
 
-        # Print the details of the best job option
-        print("\nBest Job Option:")
-        print("Job Name:", best_job['job_name'])
-        print("Company:", best_job['company_name'])
-        print("Description:", best_job['job_description'])
+        short_description = nlp.get_short_description(
+            best_job['job_description'])
+
+        new_offer = "Job Name: {}<br>Company: {}<br>Description: {}<br>".format(best_job['job_name'],
+                                                                                best_job['company_name'],
+                                                                                short_description)
+        return new_offer

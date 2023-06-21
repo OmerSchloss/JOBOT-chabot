@@ -12,6 +12,7 @@ job_data = []
 isDoneSearching = True
 thread = None
 
+
 def find_jobs_from(website, job_title, location, desired_characs):
     """
     This function extracts all the desired characteristics of all new job postings
@@ -324,23 +325,26 @@ def find_job_offers(job_titles, job_locations):
             # find_jobs_from('CWjobs', job_title, job_location, desired_characs)
 
             if (num_listings > 0):
-                job_data.append(new_jobs_list)
+                job_data.extend(new_jobs_list)
 
     return job_data
+
 
 def find_job_offers_async(job_titles, job_locations):
     global thread
     # Start a new thread for find_job_offers
-    thread = threading.Thread(target=find_job_offers, args=(job_titles, job_locations))
+    thread = threading.Thread(target=find_job_offers,
+                              args=(job_titles, job_locations))
     thread.start()
+
 
 def get_job_offers():
     # Wait for the find_job_offers thread to complete
     global thread
 
-    thread.join() # type: ignore
+    thread.join()  # type: ignore
 
     # Retrieve the job_data and process it
-    jobs_df = pd.DataFrame(job_data)
+    # jobs_df = pd.DataFrame(job_data)
 
-    return jobs_df
+    return job_data
