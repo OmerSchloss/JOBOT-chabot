@@ -14,11 +14,12 @@ app = Flask(__name__, template_folder='./templates', static_folder='./static')
 # Conversation flow questions
 questions = [
     "What is your preferred job title or role?",
+    "What is your preferred location for the job?",
+
     "What industry or field are you interested in?",
     "How many years of experience do you have in this field?",
     "What are your specific skills or areas of expertise?",
     "Are you looking for full-time, part-time, or freelance opportunities?",
-    "What is your preferred location for the job?",
     "Are you open to remote work or do you prefer on-site positions?",
     "What is your desired salary range?",
     "Are there any specific companies or organizations you would like to work for?",
@@ -120,7 +121,6 @@ def get_bot_response():
     global job_titles
     global job_locations
 
-
     if current_step is None:
         # Welcome message and first question to start the conversation
         welcome_message = "Hello! I'm here to assist you with your job search. Would you like to start?"
@@ -156,9 +156,9 @@ def get_bot_response():
             print(job_locations)
             if job_locations == []:
                 return "I didn't catch any location, please try again."
-            if(job_titles != [] and job_locations !=[]):
-                find_job_offers_async(job_titles=job_titles,job_locations=job_locations)   
-            
+            if (job_titles != [] and job_locations != []):
+                find_job_offers_async(
+                    job_titles=job_titles, job_locations=job_locations)
 
         if (current_question == "Would you like to start the job search?"):
             if userText is not None and (nlp.is_positive_response(userText.lower())):
