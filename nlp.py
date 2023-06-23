@@ -248,6 +248,29 @@ def process_answer_location(text):
     return relevant_locations
 
 
+def process_answer_job_type(text):
+    doc = nlp(text)
+    job_type = ''
+
+    keyword_synonyms = {
+        "permanent": ["permanent", "full-time", "regular", "ongoing", "stable", "long-term", "career", "salaried", "professional", "standard", "secure", "stable", "steadfast", "consistent"],
+        "fulltime": ["fulltime", "full-time", "standard", "fixed", "traditional", "conventional", "usual", "normal"],
+        "temporary": ["temporary", "temp", "short-term", "seasonal", "part-time", "contractual", "hourly", "flexible", "interim", "occasional", "freelance", "project-based"],
+        "internship": ["internship", "intern", "traineeship", "apprenticeship", "learning", "development", "educational", "practical"],
+        "contract": ["contract", "freelance", "project-based", "temporary", "hourly", "consulting", "self-employed", "gig", "independent", "outsourced", "non-permanent"]
+    }
+
+    for token in doc:
+        for j_type, synonyms in keyword_synonyms.items():
+            if token.text.lower() in synonyms:
+                job_type = j_type
+                break
+        if job_type:
+            break
+
+    return job_type
+
+
 def get_short_description(text):
     doc = nlp(text)
 

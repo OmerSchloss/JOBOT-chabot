@@ -3,7 +3,7 @@ import random
 from flask import Flask, render_template, request
 import pandas as pd
 from FindBestJob import find_the_best_job
-from JobScraper import find_job_offers_async, get_job_offers
+from JobScraper_Indeed import find_job_offers_async, get_job_offers
 import nlp
 
 # import webview
@@ -15,6 +15,7 @@ app = Flask(__name__, template_folder='./templates', static_folder='./static')
 questions = [
     "What is your preferred job title or role?",
     "What is your preferred location for the job?",
+    "Are you looking for full-time, part-time, internship, or contract opportunities?",
 
     "What industry or field are you interested in?",
     "How many years of experience do you have in this field?",
@@ -44,6 +45,7 @@ answers = []
 askedQuestions = []
 job_titles = None
 job_locations = None
+job_type = ""
 
 
 def get_next_question():
@@ -77,11 +79,13 @@ def reset_conversation():
     global askedQuestions
     global job_titles
     global job_locations
+    global job_type
 
     # Conversation flow questions
     questions = [
         "What is your preferred job title or role?",
         "What is your preferred location for the job?",
+        "Are you looking for full-time, part-time, internship, or contract opportunities?",
 
         "What industry or field are you interested in?",
         "How many years of experience do you have in this field?",
@@ -120,6 +124,7 @@ def get_bot_response():
     global askedQuestions
     global job_titles
     global job_locations
+    global job_type
 
     if current_step is None:
         # Welcome message and first question to start the conversation
@@ -156,9 +161,20 @@ def get_bot_response():
             print(job_locations)
             if job_locations == []:
                 return "I didn't catch any location, please try again."
-            if (job_titles != [] and job_locations != []):
+
+        if current_question == "Are you looking for full-time, part-time, internship, or contract opportunities?":
+            job_type = nlp.process_answer_job_type(userText)
+            print(job_type)
+
+            if (job_type == ""):
+                if (nlp.is_negative_response(userText)):
+                    find_job_offers_async(
+                        job_titles=job_titles, job_locations=job_locations, job_type=job_type)
+                else:
+                    return "I didn't catch any job type, would you like to try again?."
+            else:
                 find_job_offers_async(
-                    job_titles=job_titles, job_locations=job_locations)
+                    job_titles=job_titles, job_locations=job_locations, job_type="fulltime")
 
         if (current_question == "Would you like to start the job search?"):
             if userText is not None and (nlp.is_positive_response(userText.lower())):
