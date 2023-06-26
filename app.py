@@ -3,7 +3,7 @@ import json
 from flask import Flask, render_template, request
 import pandas as pd
 from FindBestJob import find_the_best_job
-from JobScraper_Indeed import find_job_offers_async, get_job_offers
+from JobScraper_Indeed import find_job_offers_async_in_Indeed, get_job_offers_in_Indeed
 import nlp
 
 # import webview
@@ -136,7 +136,7 @@ def get_bot_response():
 
     if state["job_search_started"] == False and state["job_titles"] != [] and state["job_locations"] == [] and state["job_type"] != "":
         state["job_search_started"] = True
-        find_job_offers_async(
+        find_job_offers_async_in_Indeed(
             job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
 
     if state["current_step"] is None:
@@ -187,7 +187,7 @@ def get_bot_response():
                     state["job_type"] = 'not_relevant'
                 if (state["job_search_started"] == False):
                     state["job_search_started"] = True
-                    find_job_offers_async(
+                    find_job_offers_async_in_Indeed(
                         job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
             else:
                 return "I didn't catch any job type, would you like to try again?."
@@ -222,7 +222,7 @@ def get_bot_response():
         if userText is not None and userText.lower() == "yes":
             # User wants the bot to start searching on the web
             # Add code to initiate the job search using a web scraper and return fake job offers
-            job_offers = get_job_offers()
+            job_offers = get_job_offers_in_Indeed()
 
             df = pd.DataFrame(
                 {'Questions': state["askedQuestions"], 'Answers': state["answers"]})
