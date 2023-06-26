@@ -3,12 +3,16 @@ import json
 from flask import Flask, render_template, request
 import pandas as pd
 from FindBestJob import find_the_best_job
-from JobScraper_Indeed import find_job_offers_async_in_Indeed, get_job_offers_in_Indeed
 import nlp
 
-# import webview
+from jobScraper_Google import find_job_offers_async_in_Google, get_job_offers_in_Google
+from jobScraper_Indeed import find_job_offers_async_in_Indeed, get_job_offers_in_Indeed
+from jobScraper_JobIsJob import find_job_offers_async_in_JobIsJob, get_job_offers_in_JobIsJob
+from jobScraper_LinkUp import find_job_offers_async_in_LinkUp, get_job_offers_in_LinkUp
+from jobscraper_Monster import find_job_offers_async_in_Monster, get_job_offers_in_Monster
+from jobScraper_SimplyHired import find_job_offers_async_in_SimplyHired, get_job_offers_in_SimplyHired
+from jobScraper_SnagaJob import find_job_offers_async_in_SnagaJob, get_job_offers_in_SnagaJob
 
-# app = Flask(__name__)
 app = Flask(__name__, template_folder='./templates', static_folder='./static')
 
 conversation_topics = [
