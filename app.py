@@ -20,7 +20,6 @@ questions = [
     "What industry or field are you interested in?",
     "How many years of experience do you have in this field?",
     "What are your specific skills or areas of expertise?",
-    "Are you looking for full-time, part-time, or freelance opportunities?",
     "Are you open to remote work or do you prefer on-site positions?",
     "What is your desired salary range?",
     "Are there any specific companies or organizations you would like to work for?",
@@ -62,7 +61,7 @@ def get_random_conversation_topic():
     return random.choice(conversation_topics)
 
 
-@app.route("/chatbot")
+@app.route("/")
 def home():
     return render_template("index.html")
 
@@ -90,7 +89,6 @@ def reset_conversation():
         "What industry or field are you interested in?",
         "How many years of experience do you have in this field?",
         "What are your specific skills or areas of expertise?",
-        "Are you looking for full-time, part-time, or freelance opportunities?",
         "Are you open to remote work or do you prefer on-site positions?",
         "What is your desired salary range?",
         "Are there any specific companies or organizations you would like to work for?",
@@ -231,5 +229,7 @@ def get_bot_response():
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    #app.run(debug=False, port=5555)
+    app.run(host="0.0.0.0", port=5555)
+
     # webview.start()
