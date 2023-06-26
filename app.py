@@ -81,14 +81,6 @@ def get_random_conversation_topic():
     # Retrieve a random conversation topic
     return random.choice(conversation_topics)
 
-
-if __name__ == "__main__" or __name__ =='app':
-    # Restore the state
-    restore_state()
-
-    # app.run(debug=False, port=5555)
-    app.run(host="0.0.0.0", port=5555)
-
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -251,3 +243,10 @@ def get_bot_response():
     # If the code reaches this point, handle any unexpected or unrecognized user input
     return response
 
+
+if __name__ == "__main__" or __name__ =='app':
+    # Restore the state
+    restore_state()
+
+    # app.run(debug=False, port=5555)
+    app.run(host="0.0.0.0", port=5555)
