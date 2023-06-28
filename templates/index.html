@@ -164,14 +164,14 @@
     }
 
     function splitLongText(text) {
-      let maxCharactersPerLine = 30; // Maximum number of characters per line
-      let words = text.split(" ");
+      const maxCharactersPerLine = calculateMaxCharactersPerLine();
+      const words = text.split(" ");
       let result = "";
       let line = "";
 
       for (let i = 0; i < words.length; i++) {
-        let currentWord = words[i];
-        let remainingSpace = maxCharactersPerLine - line.length;
+        const currentWord = words[i];
+        const remainingSpace = maxCharactersPerLine - line.length;
 
         if (currentWord.length <= maxCharactersPerLine) {
           if (currentWord.length <= remainingSpace) {
@@ -181,7 +181,7 @@
             line = currentWord + " ";
           }
         } else {
-          let wordParts = splitWordIntoParts(currentWord, maxCharactersPerLine);
+          const wordParts = splitWordIntoParts(currentWord, maxCharactersPerLine);
           for (let j = 0; j < wordParts.length; j++) {
             if (line.length + wordParts[j].length <= maxCharactersPerLine) {
               line += wordParts[j] + " ";
@@ -200,8 +200,15 @@
       return result;
     }
 
+    function calculateMaxCharactersPerLine() {
+      const htmlWidth = document.documentElement.clientWidth;
+      const msgTextContainerWidth = htmlWidth * 0.6; // Set the width as a percentage of the HTML width
+      const maxCharactersPerLine = Math.floor(msgTextContainerWidth / 10); // Assuming an average character width of 10 pixels
+      return maxCharactersPerLine;
+    }
+
     function splitWordIntoParts(word, maxCharactersPerLine) {
-      let parts = [];
+      const parts = [];
       for (let i = 0; i < word.length; i += maxCharactersPerLine) {
         parts.push(word.substr(i, maxCharactersPerLine));
       }
