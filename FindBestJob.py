@@ -141,4 +141,5 @@ def find_the_best_job(df_QA, job_data):
         new_offer = "Job Name: {}<br>Company: {}<br>Description: {}<br>".format(best_job['job_name'],
                                                                                 best_job['company_name'],
                                                                                 short_description)
-        return new_offer
+        return (new_offer, best_job['job_link'], best_job['job_key'])
+    return "", "", ""

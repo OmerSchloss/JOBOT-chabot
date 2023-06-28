@@ -4,32 +4,18 @@ import re
 model_path = "models/en_core_web_sm-3.5.0"
 nlp = spacy.load(model_path)
 
-# def process_answer(answer):
-#     doc = nlp(answer)
-
-#     # Perform named entity recognition (NER)
-#     entities = [(ent.text, ent.label_) for ent in doc.ents]
-
-#     # Perform part-of-speech (POS) tagging
-#     pos_tags = [(token.text, token.pos_) for token in doc]
-
-#     # Perform dependency parsing
-#     dependencies = [(token.text, token.dep_, token.head.text) for token in doc]
-
-#     # You can add more processing or extraction logic as needed
-
-#     return entities, pos_tags, dependencies
-
 
 def is_positive_response(text):
     doc = nlp(text)
 
-    positive_keywords = ['yes', 'yeah', 'absolutely',
-                         'definitely', 'certainly', 'sure', 'of course']
+    positive_keywords = [
+        'yes', 'yeah', 'absolutely', 'definitely', 'certainly', 'sure', 'of course'
+    ]
 
     for token in doc:
         if token.lemma_ in positive_keywords:
-            return True
+            if not is_negative_response(text):
+                return True
 
     return False
 
@@ -37,7 +23,7 @@ def is_positive_response(text):
 def is_negative_response(text):
     doc = nlp(text)
 
-    negative_keywords = ['no', 'nope', 'not really',
+    negative_keywords = ['no', 'not', 'nope', 'not really',
                          'not interested', 'don\'t', 'do not', 'never']
 
     for token in doc:
@@ -53,7 +39,7 @@ def want_to_start_job_search(text):
     start_job_search_keywords = ['start', 'search']
 
     for token in doc:
-        if token.lemma_ in start_job_search_keywords:
+        if token.lemma_.lower() in start_job_search_keywords:
             return True
 
     return False
@@ -86,7 +72,7 @@ def process_answer_job_title(text):
 
     # Check for single-word job titles and add them only if not already in any multi-word job title
     for token in doc_job_title:
-        if token.pos_ == 'NOUN':
+        if token.pos_ == 'NOUN' and token.text.lower() not in ["search"]:
             is_single_word_title = True
             for title in relevant_job_titles:
                 if token.text in title.split():
@@ -94,7 +80,6 @@ def process_answer_job_title(text):
                     break
             if is_single_word_title:
                 relevant_job_titles.append(token.text)
-
     return relevant_job_titles
 
 
@@ -253,11 +238,11 @@ def process_answer_job_type(text):
     job_type = ''
 
     keyword_synonyms = {
-        "permanent": ["permanent", "full-time", "regular", "ongoing", "stable", "long-term", "career", "salaried", "professional", "standard", "secure", "stable", "steadfast", "consistent"],
-        "fulltime": ["fulltime", "full-time", "standard", "fixed", "traditional", "conventional", "usual", "normal"],
-        "temporary": ["temporary", "temp", "short-term", "seasonal", "part-time", "contractual", "hourly", "flexible", "interim", "occasional", "freelance", "project-based"],
-        "internship": ["internship", "intern", "traineeship", "apprenticeship", "learning", "development", "educational", "practical"],
-        "contract": ["contract", "freelance", "project-based", "temporary", "hourly", "consulting", "self-employed", "gig", "independent", "outsourced", "non-permanent"]
+        'permanent': ['permanent', 'full-time', 'regular', 'ongoing', 'stable', 'long-term', 'career', 'salaried', 'professional', 'standard', 'steadfast', 'consistent'],
+        'fulltime': ['fulltime', 'full-time', 'standard', 'fixed', 'traditional', 'conventional', 'usual', 'normal'],
+        'temporary': ['temporary', 'temp', 'short-term', 'seasonal', 'part-time', 'contractual', 'hourly', 'flexible', 'interim', 'occasional', 'freelance', 'project-based', 'gig'],
+        'internship': ['internship', 'intern', 'traineeship', 'apprenticeship', 'learning', 'development', 'educational', 'practical'],
+        'contract': ['contract', 'freelance', 'project-based', 'temporary', 'hourly', 'consulting', 'self-employed', 'independent', 'outsourced', 'non-permanent']
     }
 
     for token in doc:
@@ -265,7 +250,7 @@ def process_answer_job_type(text):
             if token.text.lower() in synonyms:
                 job_type = j_type
                 break
-        if job_type:
+        if job_type != '' and not is_negative_response(text):
             break
 
     return job_type

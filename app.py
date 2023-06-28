@@ -3,7 +3,7 @@ import json
 from flask import Flask, render_template, request
 import pandas as pd
 from FindBestJob import find_the_best_job
-from jobScraper import find_all_job_offers_async, get_all_job_offers
+from jobScraper import find_all_job_offers, get_all_job_offers
 import nlp
 
 
@@ -40,6 +40,8 @@ state = {
     "job_titles": None,
     "job_locations": None,
     "job_type": "",
+    "job_link": "",
+    "job_offers": [],
     "isRestored": ""
 }
 
@@ -113,6 +115,8 @@ def reset_conversation():
         "job_titles": [],
         "job_locations": [],
         "job_type": "",
+        "job_link": "",
+        "job_offers": [],
         "isRestored": False
     }
 
@@ -133,9 +137,9 @@ def get_bot_response():
         state["job_search_started"] = False
         state['isRestored'] = False
 
-    if state["job_search_started"] == False and state["job_titles"] != [] and state["job_locations"] != [] and state["job_type"] != "":
+    if state["current_step"] != 'job_offers_step' and state["job_search_started"] == False and state["job_titles"] != [] and state["job_locations"] != [] and state["job_type"] != "":
         state["job_search_started"] = True
-        find_all_job_offers_async(
+        find_all_job_offers(
             job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
 
     if state["current_step"] is None:
@@ -186,7 +190,7 @@ def get_bot_response():
                     state["job_type"] = 'not_relevant'
                 if (state["job_search_started"] == False):
                     state["job_search_started"] = True
-                    find_all_job_offers_async(
+                    find_all_job_offers(
                         job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
             else:
                 return "I didn't catch any job type, would you like to try again?."
@@ -221,21 +225,56 @@ def get_bot_response():
         if userText is not None and nlp.is_positive_response(userText.lower()):
             if state["job_search_started"] == False:
                 state["job_search_started"] = True
-                find_all_job_offers_async(
+                find_all_job_offers(
                     job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
 
-            # User wants the bot to start searching on the web
-            # Add code to initiate the job search using a web scraper and return fake job offers
-            job_offers = get_all_job_offers()
+            state["job_offers"] = get_all_job_offers()
 
             df = pd.DataFrame(
                 {'Questions': state["askedQuestions"], 'Answers': state["answers"]})
             df['Combined_Answers'] = ' '.join(state["answers"])
-            new_offer = find_the_best_job(df, job_offers)
-            result_string = "I have found for you {} suitable job offers!<br>I think this one will be the best suited for you:<br><br>{}".format(
-                len(job_offers), new_offer)
+            new_offer, state["job_link"], state["job_key"] = find_the_best_job(
+                df, state["job_offers"])
+            new_job_offer = "I have found for you {} suitable job offers!<br>I think this one will be the best suited for you:<br><br>{}".format(
+                len(state["job_offers"]), new_offer)
 
-            return result_string
+            state["job_offers"] = [obj for obj in state["job_offers"]
+                                   if obj['job_key'] != state["job_key"]]
+            state["current_question"] = 'Would you like to see more about this job and apply?'
+            state["current_step"] = 'job_offers_step'
+            # Save the state
+            save_state()
+            return "{}<br><br>{}".format(new_job_offer, state["current_question"])
+
+    if state["current_step"] == 'job_offers_step':
+        if (state["current_question"] == 'Would you like to see more about this job and apply?'):
+            if userText is not None and (nlp.is_positive_response(userText.lower())):
+                state["current_question"] = 'Would you like to get another job offer that might be suited for you?'
+                # Save the state
+                save_state()
+                return 'Here is the link:<br> {} <br>{}'.format(state["job_link"], state["current_question"])
+            elif userText is not None and (nlp.is_negative_response(userText.lower())):
+                state["current_question"] = 'Would you like to get another job offer that might be suited for you?'
+                # Save the state
+                save_state()
+                return state["current_question"]
+            else:
+                return "I'm sorry, I didn't understand your response."
+        if (state["current_question"] == 'Would you like to get another job offer that might be suited for you?'):
+            df = pd.DataFrame(
+                {'Questions': state["askedQuestions"], 'Answers': state["answers"]})
+            df['Combined_Answers'] = ' '.join(state["answers"])
+            new_offer, state["job_link"], state["job_key"] = find_the_best_job(
+                df, state["job_offers"])
+            
+            state["job_offers"] = [obj for obj in state["job_offers"]
+                                   if obj['job_key'] != state["job_key"]]
+            new_job_offer = "I have found for you {} suitable job offers!<br>here is a new job offer:<br><br>{}".format(
+                len(state["job_offers"]), new_offer)
+            state["current_question"] = 'Would you like to see more about this job and apply?'
+            # Save the state
+            save_state()
+            return "{}<br><br>{}".format(new_job_offer, state["current_question"])
 
     if state["current_step"] == "conversation":
         if random.random() < 0.3:
@@ -248,7 +287,7 @@ def get_bot_response():
     return response
 
 
-if __name__ == "__main__" or __name__ == 'app':
+if __name__ == "__main__" or __name__ == "app":
     # Restore the state
     restore_state()
 

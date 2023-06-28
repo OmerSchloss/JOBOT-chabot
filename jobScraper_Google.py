@@ -104,7 +104,7 @@ def find_job_offers_in_Google(job_titles, job_locations, job_type):
     return job_data
 
 
-def find_job_offers_async_in_Google(job_titles, job_locations, job_type):
+def find_job_offers_thread_in_Google(job_titles, job_locations, job_type):
     global thread
     # Start a new thread for find_job_offers
     thread = threading.Thread(target=find_job_offers_in_Google, args=(
@@ -112,9 +112,14 @@ def find_job_offers_async_in_Google(job_titles, job_locations, job_type):
     thread.start()
 
 
-def get_job_offers_in_Google():
-    # Wait for the find_job_offers thread to complete
+def get_job_offers_in_Google(exit=False):
+    # Wait for the find_job_offers_thread thread to complete
     global thread
+    global job_data
+
+    global should_exit
+    should_exit = exit
+
     if thread.is_alive():
         thread.join()
     return job_data
