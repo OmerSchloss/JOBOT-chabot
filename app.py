@@ -50,7 +50,7 @@ state_file_path = "state.txt"
 
 def save_state():
     # Save the state to the state file
-    with open(state_file_path, "w") as file:
+    with open(state_file_path, "w+") as file:
         json.dump(state, file)
 
 
@@ -222,12 +222,18 @@ def get_bot_response():
         # Check if the job search has started or if the user wants to continue with questions
         if userText is not None and nlp.is_positive_response(userText.lower()):
             if state["job_search_started"] == False:
-                state["job_search_started"] = True
-                find_all_job_offers(
-                    job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
-
+                    
+                if (state["job_titles"] != [] and state["job_locations"] != [] and state["job_type"] != ""):
+                    state["job_search_started"] = True
+                    find_all_job_offers(
+                        job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
+                else:
+                    return 'something went wrong, please refresh the page and start from the beginnings.'
             state["job_offers"] = get_all_job_offers()
-
+            if(len(state["job_offers"]) == 0):
+                state["current_step"] = 'job_offers_step'
+                return "I haven't found any job offers for you. You can refresh the page or wait until tomorrow when new jobs may be posted."
+            
             df = pd.DataFrame(
                 {'Questions': state["askedQuestions"], 'Answers': state["answers"]})
             df['Combined_Answers'] = ' '.join(state["answers"])

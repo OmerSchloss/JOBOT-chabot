@@ -1,10 +1,4 @@
 """
-The code starts by importing the necessary libraries and modules, including pandas, torch, numpy,
-cosine_similarity from sklearn, and the BertTokenizer and BertModel from the transformers library.
-"""
-
-
-"""
 AI is used in the code in the following ways:
 
 1. BERT Model: The code utilizes the BERT (Bidirectional Encoder Representations from Transformers) model, which is a state-of-the-art transformer-based model for natural language understanding. BERT has been pre-trained on a large corpus of text data and has learned to understand the context and meaning of words and sentences.
