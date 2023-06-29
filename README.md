@@ -1,5 +1,5 @@
 ## Usage:-
-- Download this repository via GIT or zip.
+- Download this repository/
 - Open CMD in directory of this repository(Python 3.6 should be installed)
 - type `pip install -r requirements.txt`.
 - After installation run `app.py`.
