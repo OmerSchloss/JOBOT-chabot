@@ -1,5 +1,4 @@
 import spacy
-import re
 
 model_path = "models/en_core_web_sm-3.5.0"
 nlp = spacy.load(model_path)
