@@ -267,6 +267,9 @@ def get_bot_response():
                 return "I'm sorry, I didn't understand your response."
         if (state["current_question"] == 'Would you like to get another job offer that might be suited for you?'):
             if userText is not None and (nlp.is_positive_response(userText.lower())):
+                if(len(state["job_offers"]) == 0):
+                   return "I haven't found any more job offers for you. You can refresh the page or wait until tomorrow when new jobs may be posted."
+            
                 df = pd.DataFrame(
                     {'Questions': state["askedQuestions"], 'Answers': state["answers"]})
                 df['Combined_Answers'] = ' '.join(state["answers"])
