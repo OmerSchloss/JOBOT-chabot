@@ -201,9 +201,11 @@ def get_bot_response():
             elif userText is not None and (nlp.is_negative_response(userText.lower())):
                 if (state["last_step"] != "conversation"):
                     # User wants to engage in a conversation about advice and job-related topics
+                    state['last_step'] = 'questions'
                     state["current_step"] = "conversation"
                     topic = get_random_conversation_topic()
                     return f"Sure! Let's talk about {topic}. What would you like to know or discuss?"
+                state['last_step'] = 'questions'
                 state["current_step"] = "conversation"
             else:
                 return "I'm sorry, I didn't understand your response. Could you please answer with 'yes' or 'no' in a different way? For example, you can say 'absolutely' or 'not at the moment'."
@@ -261,27 +263,46 @@ def get_bot_response():
             else:
                 return "I'm sorry, I didn't understand your response."
         if (state["current_question"] == 'Would you like to get another job offer that might be suited for you?'):
-            df = pd.DataFrame(
-                {'Questions': state["askedQuestions"], 'Answers': state["answers"]})
-            df['Combined_Answers'] = ' '.join(state["answers"])
-            new_offer, state["job_link"], state["job_key"] = find_the_best_job(
-                df, state["job_offers"])
-            
-            state["job_offers"] = [obj for obj in state["job_offers"]
-                                   if obj['job_key'] != state["job_key"]]
-            new_job_offer = "I have found for you {} suitable job offers!<br>here is a new job offer:<br><br>{}".format(
-                len(state["job_offers"]), new_offer)
-            state["current_question"] = 'Would you like to see more about this job and apply?'
-            # Save the state
-            save_state()
-            return "{}<br><br>{}".format(new_job_offer, state["current_question"])
+            if userText is not None and (nlp.is_positive_response(userText.lower())):
+                df = pd.DataFrame(
+                    {'Questions': state["askedQuestions"], 'Answers': state["answers"]})
+                df['Combined_Answers'] = ' '.join(state["answers"])
+                new_offer, state["job_link"], state["job_key"] = find_the_best_job(
+                    df, state["job_offers"])
+
+                state["job_offers"] = [obj for obj in state["job_offers"]
+                                       if obj['job_key'] != state["job_key"]]
+                new_job_offer = "I have found for you {} suitable job offers!<br>here is a new job offer:<br><br>{}".format(
+                    len(state["job_offers"]), new_offer)
+                state["current_question"] = 'Would you like to see more about this job and apply?'
+                # Save the state
+                save_state()
+                return "{}<br><br>{}".format(new_job_offer, state["current_question"])
+            elif userText is not None and (nlp.is_negative_response(userText.lower())):
+                if (state["last_step"] != "conversation"):
+                    # User wants to engage in a conversation about advice and job-related topics
+                    state['last_step'] = 'job_offers_step'
+                    state["current_step"] = "conversation"
+                    topic = get_random_conversation_topic()
+                    return f"Sure! Let's talk about {topic}. What would you like to know or discuss?"
+                state['last_step'] = 'job_offers_step'
+                state["current_step"] = "conversation"
+            else:
+                return "I'm sorry, I didn't understand your response."
 
     if state["current_step"] == "conversation":
-        if random.random() < 0.3:
-            # Ask if the user wants to start the job search
-            state["last_step"] = state["current_step"]
+        if random.random() < 0.2:
+            if (state['last_step'] == 'questions'):
+                state['last_step'] = "conversation"
+                state["current_step"] = 'questions'
+                return "By the way, would you like the start answering the questions now?"
+            if (state['last_step'] == 'job_offers_step'):
+                state['last_step'] = "conversation"
+                state["current_step"] = 'job_offers_step'
+                state["current_question"] = 'Would you like to get another job offer that might be suited for you?'
+                return "By the way,Would you like to get another job offer that might be suited for you?"
             state["current_step"] = "start"
-            return "By the way, would you like the start answering the questions now?"
+        return response
 
     # If the code reaches this point, handle any unexpected or unrecognized user input
     return response
