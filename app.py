@@ -3,19 +3,13 @@ import json
 from flask import Flask, render_template, request
 import pandas as pd
 from FindBestJob import find_the_best_job
+from conversation import generate_conversation_response, get_random_conversation_topic
 from jobScraper import find_all_job_offers, get_all_job_offers
 import nlp
 
 
 app = Flask(__name__, template_folder='./templates', static_folder='./static')
 
-conversation_topics = [
-    "resume",
-    "networking",
-    "interview preparation",
-    "career development",
-    "work-life balance"
-]
 
 state = {
     "last_step": None,
@@ -42,7 +36,9 @@ state = {
     "job_type": "",
     "job_link": "",
     "job_offers": [],
-    "isRestored": ""
+    "isRestored": "",
+    "topic": ""
+
 }
 
 # Path to the state file
@@ -75,11 +71,6 @@ def get_next_question():
         return state["questions"].pop(0)
     else:
         return "Would you like to start the job search?"
-
-
-def get_random_conversation_topic():
-    # Retrieve a random conversation topic
-    return random.choice(conversation_topics)
 
 
 @app.route("/")
@@ -117,7 +108,8 @@ def reset_conversation():
         "job_type": "",
         "job_link": "",
         "job_offers": [],
-        "isRestored": False
+        "isRestored": False,
+        "topic": ""
     }
 
     # Save the state
@@ -129,7 +121,7 @@ def reset_conversation():
 @app.route("/get")
 def get_bot_response():
     userText = request.args.get('msg')
-    response = 'well'  # str(CB.get_response(userText))
+    response = 'well..'
 
     global state
 
@@ -162,8 +154,8 @@ def get_bot_response():
             if (state["last_step"] != "conversation"):
                 # User wants to engage in a conversation about advice and job-related topics
                 state["current_step"] = "conversation"
-                topic = get_random_conversation_topic()
-                return f"Sure! Let's talk about {topic}. What would you like to know or discuss?"
+                state['topic'] = get_random_conversation_topic()
+                return f"Sure! Let's talk about {state['topic']}. What would you like to know or discuss?"
             state["current_step"] = "conversation"
         else:
             return "I'm sorry, I didn't understand your response. Could you please answer with 'yes' or 'no' in a different way? For example, you can say 'absolutely' or 'not at the moment'."
@@ -203,8 +195,8 @@ def get_bot_response():
                     # User wants to engage in a conversation about advice and job-related topics
                     state['last_step'] = 'questions'
                     state["current_step"] = "conversation"
-                    topic = get_random_conversation_topic()
-                    return f"Sure! Let's talk about {topic}. What would you like to know or discuss?"
+                    state['topic'] = get_random_conversation_topic()
+                    return f"Sure! Let's talk about {state['topic']}. What would you like to know or discuss?"
                 state['last_step'] = 'questions'
                 state["current_step"] = "conversation"
             else:
@@ -283,8 +275,8 @@ def get_bot_response():
                     # User wants to engage in a conversation about advice and job-related topics
                     state['last_step'] = 'job_offers_step'
                     state["current_step"] = "conversation"
-                    topic = get_random_conversation_topic()
-                    return f"Sure! Let's talk about {topic}. What would you like to know or discuss?"
+                    state['topic'] = get_random_conversation_topic()
+                    return f"Sure! Let's talk about {state['topic']}. What would you like to know or discuss?"
                 state['last_step'] = 'job_offers_step'
                 state["current_step"] = "conversation"
             else:
@@ -302,7 +294,7 @@ def get_bot_response():
                 state["current_question"] = 'Would you like to get another job offer that might be suited for you?'
                 return "By the way,Would you like to get another job offer that might be suited for you?"
             state["current_step"] = "start"
-        return response
+        return generate_conversation_response(state["topic"], userText)
 
     # If the code reaches this point, handle any unexpected or unrecognized user input
     return response
