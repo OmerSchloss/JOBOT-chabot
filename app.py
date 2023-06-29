@@ -326,9 +326,6 @@ def update_job_offers():
         print("Job offers updated")
 
 
-def find_job_offers_thread():
-    # Call the function to find more job offers
-    update_job_offers()
 
 
 def run_flask_app():
@@ -342,12 +339,6 @@ if __name__ == "__main__":
 
     # Schedule the job to run every day at 3 AM
     schedule.every().day.at("03:00").do(update_job_offers)
-
-    # Create a new thread for finding job offers
-    job_offers_thread = threading.Thread(target=find_job_offers_thread)
-
-    # Start the thread
-    job_offers_thread.start()
 
     # Run the Flask app in a separate thread
     flask_thread = threading.Thread(target=run_flask_app)
