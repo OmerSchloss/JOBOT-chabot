@@ -4,9 +4,11 @@ from flask import Flask, render_template, request
 import pandas as pd
 from FindBestJob import find_the_best_job
 from conversation import generate_conversation_response, get_random_conversation_topic
-from jobScraper import find_all_job_offers, get_all_job_offers
+from jobScraper import find_all_job_offers, get_all_job_offers, get_all_job_offers_await
 import nlp
-
+import schedule
+import time
+import threading
 
 app = Flask(__name__, template_folder='./templates', static_folder='./static')
 
@@ -36,6 +38,7 @@ state = {
     "job_type": "",
     "job_link": "",
     "job_offers": [],
+    "old_job_keys": [],
     "isRestored": "",
     "topic": ""
 
@@ -108,6 +111,7 @@ def reset_conversation():
         "job_type": "",
         "job_link": "",
         "job_offers": [],
+        "old_job_keys": [],
         "isRestored": False,
         "topic": ""
     }
@@ -229,6 +233,7 @@ def get_bot_response():
             df['Combined_Answers'] = ' '.join(state["answers"])
             new_offer, state["job_link"], state["job_key"] = find_the_best_job(
                 df, state["job_offers"])
+            state["old_job_keys"].append(state["job_key"])
             new_job_offer = "I have found for you {} suitable job offers!<br>I think this one will be the best suited for you:<br><br>{}".format(
                 len(state["job_offers"]), new_offer)
 
@@ -261,10 +266,11 @@ def get_bot_response():
                 df['Combined_Answers'] = ' '.join(state["answers"])
                 new_offer, state["job_link"], state["job_key"] = find_the_best_job(
                     df, state["job_offers"])
+                state["old_job_keys"].append(state["job_key"])
 
                 state["job_offers"] = [obj for obj in state["job_offers"]
                                        if obj['job_key'] != state["job_key"]]
-                new_job_offer = "I have found for you {} suitable job offers!<br>here is a new job offer:<br><br>{}".format(
+                new_job_offer = "Ok, here is a new job offer that I have found for you:<br><br>{}".format(
                     len(state["job_offers"]), new_offer)
                 state["current_question"] = 'Would you like to see more about this job and apply?'
                 # Save the state
@@ -300,9 +306,45 @@ def get_bot_response():
     return response
 
 
-if __name__ == "__main__" or __name__ == "app":
+def update_job_offers():
+    # Code to find more job offers and update state['job_offers']
+    find_all_job_offers(
+        job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
+    state["job_offers"].extend(get_all_job_offers_await())
+    state["job_offers"] = [obj for obj in state["job_offers"]
+                           if obj['job_key'] not in state["old_job_keys"]]
+    save_state()
+    print("Job offers updated")
+
+
+def find_job_offers_thread():
+    # Call the function to find more job offers
+    update_job_offers()
+
+
+def run_flask_app():
+    # Run the Flask app
+    app.run(host="0.0.0.0", port=7085)
+
+
+if __name__ == "__main__":
     # Restore the state
     restore_state()
 
-    # app.run(debug=False, port=7085)
-    app.run(host="0.0.0.0", port=7085)
+    # Schedule the job to run every day at 3 AM
+    schedule.every().day.at("03:00").do(update_job_offers)
+
+    # Create a new thread for finding job offers
+    job_offers_thread = threading.Thread(target=find_job_offers_thread)
+
+    # Start the thread
+    job_offers_thread.start()
+
+    # Run the Flask app in a separate thread
+    flask_thread = threading.Thread(target=run_flask_app)
+    flask_thread.start()
+
+    # Continuously run the scheduled jobs
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

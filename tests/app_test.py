@@ -14,11 +14,14 @@ class AppTestCase(unittest.TestCase):
         pass
 
     def test_home_route(self):
+        self.app.get('/reset')
         response = self.app.get('/get?msg=hi')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Hello! I'm here to assist you with your job search. Would you like to start?", response.data)
     
     def test_get_bot_response_route(self):
+        self.app.get('/reset')
+        self.app.get('/get?msg=hi')
         response = self.app.get('/get?msg=Yes')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"What is your preferred job title or role?", response.data)
