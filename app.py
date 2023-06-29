@@ -279,8 +279,7 @@ def get_bot_response():
 
                 state["job_offers"] = [obj for obj in state["job_offers"]
                                        if obj['job_key'] != state["job_key"]]
-                new_job_offer = "Ok, here is a new job offer that I have found for you:<br><br>{}".format(
-                    len(state["job_offers"]), new_offer)
+                new_job_offer = "Ok, here is a new job offer that I have found for you:<br><br>{}".format(new_offer)
                 state["current_question"] = 'Would you like to see more about this job and apply?'
                 # Save the state
                 save_state()
