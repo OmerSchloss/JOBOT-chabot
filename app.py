@@ -307,14 +307,15 @@ def get_bot_response():
 
 
 def update_job_offers():
-    # Code to find more job offers and update state['job_offers']
-    find_all_job_offers(
-        job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
-    state["job_offers"].extend(get_all_job_offers_await())
-    state["job_offers"] = [obj for obj in state["job_offers"]
-                           if obj['job_key'] not in state["old_job_keys"]]
-    save_state()
-    print("Job offers updated")
+    if (state["job_titles"] != [] and state["job_locations"] != [] and state["job_type"] != ""):
+        # Code to find more job offers and update state['job_offers']
+        find_all_job_offers(
+            job_titles=state["job_titles"], job_locations=state["job_locations"], job_type=state["job_type"])
+        state["job_offers"].extend(get_all_job_offers_await())
+        state["job_offers"] = [obj for obj in state["job_offers"]
+                               if obj['job_key'] not in state["old_job_keys"]]
+        save_state()
+        print("Job offers updated")
 
 
 def find_job_offers_thread():
